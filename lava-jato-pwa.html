@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#0A0F0D">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Lava Jato</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-icon">💧</div>
+        <div class="logo-text">
+          <h1>Lava Jato</h1>
+          <p>Controle financeiro</p>
+        </div>
+      </div>
+      <div class="date-badge" id="date-badge"></div>
+    </div>
+
+    <div class="content">
+      <!-- REGISTRAR -->
+      <div class="tab-pane active" id="tab-registrar">
+        <div class="card">
+          <div class="card-title">Registrar dia</div>
+          <div class="field">
+            <label>Data</label>
+            <input type="date" id="inp-date">
+          </div>
+          <div class="vehicle-grid">
+            <div class="v-card">
+              <div class="v-type"><span class="v-emoji">🚗</span> Carros</div>
+              <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-carro-qtd" min="0" value="0"
+                  inputmode="numeric"></div>
+              <div class="v-input-row"><label>Preço (R$)</label><input type="number" id="v-carro-preco" min="0"
+                  value="30" inputmode="decimal"></div>
+            </div>
+            <div class="v-card">
+              <div class="v-type"><span class="v-emoji">🏍️</span> Motos</div>
+              <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-moto-qtd" min="0" value="0"
+                  inputmode="numeric"></div>
+              <div class="v-input-row"><label>Preço (R$)</label><input type="number" id="v-moto-preco" min="0"
+                  value="20" inputmode="decimal"></div>
+            </div>
+            <div class="v-card">
+              <div class="v-type"><span class="v-emoji">🛻</span> Caminhonetes</div>
+              <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-cami-qtd" min="0" value="0"
+                  inputmode="numeric"></div>
+              <div class="v-input-row"><label>Preço (R$)</label><input type="number" id="v-cami-preco" min="0"
+                  value="50" inputmode="decimal"></div>
+            </div>
+            <div class="v-card">
+              <div class="v-type"><span class="v-emoji">🚐</span> Vans</div>
+              <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-van-qtd" min="0" value="0"
+                  inputmode="numeric"></div>
+              <div class="v-input-row"><label>Preço (R$)</label><input type="number" id="v-van-preco" min="0" value="45"
+                  inputmode="decimal"></div>
+            </div>
+          </div>
+          <div class="total-preview">
+            <span class="label">Total do dia</span>
+            <span class="value" id="preview-total">R$ 0,00</span>
+          </div>
+          <button class="btn-primary" onclick="salvarDia()">
+            <span>💾</span> Salvar dia
+          </button>
+        </div>
+      </div>
+
+      <!-- SEMANA -->
+      <div class="tab-pane" id="tab-semana">
+        <div id="sem-hero"></div>
+        <div class="metric-grid" id="sem-metrics"></div>
+        <div class="card">
+          <div class="card-title">Receita por dia</div>
+          <div class="chart" id="sem-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Registros</div>
+          <div class="records" id="sem-records"></div>
+        </div>
+      </div>
+
+      <!-- MÊS -->
+      <div class="tab-pane" id="tab-mes">
+        <div id="mes-hero"></div>
+        <div class="metric-grid" id="mes-metrics"></div>
+        <div class="card">
+          <div class="card-title">Receita por semana</div>
+          <div class="chart" id="mes-chart"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Veículos por tipo</div>
+          <div class="tipo-grid" id="mes-tipos"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('registrar',this)">
+      <span class="nav-icon">✏️</span>
+      Registrar
+    </button>
+    <button class="nav-btn" onclick="showTab('semana',this)">
+      <span class="nav-icon">📊</span>
+      Semana
+    </button>
+    <button class="nav-btn" onclick="showTab('mes',this)">
+      <span class="nav-icon">📅</span>
+      Mês
+    </button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

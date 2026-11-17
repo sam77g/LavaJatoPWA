@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0A0F0D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Lava Jato</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0A0F0D; --bg2: #111916; --bg3: #182219;
+  --surface: #1A2620; --surface2: #223028;
+  --border: rgba(255,255,255,0.07);
+  --green: #1BCC8F; --green-dim: #0E7A55; --green-glow: rgba(27,204,143,0.15);
+  --amber: #F5A623; --red: #FF5252;
+  --text: #EDF5F0; --text2: #7A9B8A; --text3: #4A6858;
+  --radius: 16px; --radius-sm: 10px;
+  --font: 'Inter', sans-serif; --mono: 'JetBrains Mono', monospace;
+  --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100dvh; overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
+.shell { max-width: 480px; margin: 0 auto; min-height: 100dvh; display: flex; flex-direction: column; padding-top: var(--safe-top); padding-bottom: calc(72px + var(--safe-bottom)); }
+
+/* HEADER */
+.topbar { padding: 20px 20px 0; display: flex; align-items: center; justify-content: space-between; }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 38px; height: 38px; background: var(--green); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 0 20px var(--green-glow); }
+.logo-text h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+.logo-text p { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.date-badge { font-size: 12px; color: var(--text2); background: var(--surface); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+
+.content { flex: 1; padding: 20px; overflow-y: auto; }
+
+/* BOTTOM NAV */
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: rgba(17,25,22,0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 10px 20px calc(10px + var(--safe-bottom)); display: flex; justify-content: space-around; z-index: 100; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; cursor: pointer; color: var(--text3); font-family: var(--font); font-size: 10px; font-weight: 500; padding: 4px 0; transition: color .2s; }
+.nav-btn.active { color: var(--green); }
+.nav-btn .nav-icon { font-size: 22px; }
+
+/* CARDS */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+
+/* HERO */
+.hero-metric { background: linear-gradient(135deg, var(--bg3) 0%, #0D2218 100%); border: 1px solid var(--green-dim); border-radius: var(--radius); padding: 24px 20px; margin-bottom: 14px; position: relative; overflow: hidden; }
+.hero-metric::before { content: ''; position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; background: var(--green-glow); border-radius: 50%; filter: blur(30px); }
+.hero-label { font-size: 12px; color: var(--text2); margin-bottom: 8px; }
+.hero-value { font-family: var(--mono); font-size: 36px; font-weight: 500; color: var(--green); letter-spacing: -1px; }
+.hero-sub { font-size: 12px; color: var(--text2); margin-top: 6px; }
+
+/* METRIC GRID */
+.metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.metric { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; }
+.metric-label { font-size: 11px; color: var(--text2); margin-bottom: 6px; }
+.metric-value { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--text); }
+.metric-value.amber { color: var(--amber); }
+
+/* FORM */
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 12px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+.field input { width: 100%; padding: 13px 14px; font-size: 15px; font-family: var(--font); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; transition: border-color .15s; }
+.field input:focus { border-color: var(--green); }
+
+/* VEHICLE CARDS */
+.vehicle-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 10px; margin-bottom: 14px; }
+.v-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; transition: border-color .15s; }
+.v-card:focus-within { border-color: var(--green-dim); }
+.v-card.variados { border-color: var(--amber); background: linear-gradient(135deg, var(--bg2), #1E1709); }
+.v-card .v-type { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+.v-card.variados .v-type { color: var(--amber); }
+.v-card .v-emoji { font-size: 16px; }
+.v-card .v-price { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 8px; }
+.v-input-row { margin-bottom: 8px; }
+.v-input-row:last-child { margin-bottom: 0; }
+.v-input-row label { font-size: 10px; color: var(--text3); display: block; margin-bottom: 3px; }
+.v-input-row input { width: 100%; padding: 8px 10px; font-size: 15px; font-family: var(--mono); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); outline: none; }
+.v-input-row input:focus { border-color: var(--green); }
+.v-card.variados .v-input-row input:focus { border-color: var(--amber); }
+
+/* TOTAL PREVIEW */
+.total-preview { background: var(--bg2); border: 1px solid var(--green-dim); border-radius: var(--radius-sm); padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.total-preview .label { font-size: 13px; color: var(--text2); }
+.total-preview .value { font-family: var(--mono); font-size: 22px; color: var(--green); font-weight: 500; }
+.preview-hint { font-size: 11px; color: var(--text3); text-align: center; margin-bottom: 12px; }
+
+/* BUTTON */
+.btn-primary { width: 100%; padding: 16px; background: var(--green); color: #021A0E; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700; font-family: var(--font); cursor: pointer; transition: opacity .15s, transform .1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+.btn-ghost { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 12px; color: var(--text2); cursor: pointer; font-family: var(--font); transition: border-color .15s; }
+.btn-ghost:hover { border-color: var(--red); color: var(--red); }
+.btn-link { background: none; border: none; color: var(--red); font-size: 11px; cursor: pointer; text-decoration: underline; font-family: var(--font); display: flex; align-items: center; gap: 4px; }
+
+/* TODAY SUMMARY */
+.today-list { display: flex; flex-direction: column; gap: 6px; }
+.today-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border-radius: 8px; padding: 10px 12px; }
+.today-row .name { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.today-row .qty { font-family: var(--mono); font-size: 13px; color: var(--green); font-weight: 600; }
+.today-empty { text-align: center; padding: 20px; color: var(--text3); font-size: 13px; }
+
+/* CHART (horizontal - usado em listas) */
+.chart { margin-top: 4px; }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.bar-label { font-size: 11px; color: var(--text2); width: 56px; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 28px; background: var(--bg2); border-radius: 6px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--green-dim), var(--green)); transition: width .5s cubic-bezier(.4,0,.2,1); }
+.bar-fill.dim { background: linear-gradient(90deg, #1A3D2A, var(--green-dim)); }
+.bar-val { font-family: var(--mono); font-size: 11px; color: var(--text2); width: 72px; flex-shrink: 0; }
+
+/* WEEK CHART (barras verticais) */
+.wchart { display: flex; align-items: flex-end; gap: 6px; height: 140px; padding-top: 16px; }
+.wcol { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+.wbar-wrap { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.wbar { width: 65%; max-width: 30px; background: linear-gradient(180deg, var(--green), var(--green-dim)); border-radius: 5px 5px 2px 2px; transition: height .45s cubic-bezier(.4,0,.2,1); min-height: 3px; }
+.wbar.empty { background: var(--bg2); border: 1px dashed var(--border); }
+.wval { font-family: var(--mono); font-size: 10px; color: var(--text2); margin-top: 5px; white-space: nowrap; }
+.wday { font-size: 11px; font-weight: 700; color: var(--text2); margin-top: 2px; }
+.wcol.td .wday { color: var(--green); }
+.wcol.td .wbar { background: linear-gradient(180deg, #5EEFC0, var(--green)); }
+
+/* MONTH BREAKDOWN (barras horizontais por tipo) */
+.mrow { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.mrow .m-emoji { font-size: 18px; flex-shrink: 0; }
+.minfo { flex: 1; min-width: 0; }
+.mlabel-row { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; gap: 8px; }
+.mlabel-row .mn { font-weight: 600; color: var(--text); }
+.mlabel-row .mc { font-family: var(--mono); color: var(--text2); white-space: nowrap; }
+.mtrack { height: 8px; border-radius: 4px; background: var(--bg2); overflow: hidden; }
+.mfill { height: 100%; background: linear-gradient(90deg, var(--green-dim), var(--green)); border-radius: 4px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+
+/* RECORDS */
+.records { margin-top: 4px; }
+.record-item { background: var(--bg2); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+.record-date { font-size: 12px; color: var(--text2); flex-shrink: 0; width: 44px; text-align: center; }
+.record-date .day { font-size: 18px; font-weight: 700; color: var(--text); line-height: 1; }
+.record-date .wday { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+.record-info { flex: 1; }
+.record-total { font-family: var(--mono); font-size: 16px; color: var(--green); font-weight: 500; }
+.record-detail { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.record-del { flex-shrink: 0; }
+
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--green-dim); color: var(--green); padding: 12px 20px; border-radius: 30px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity .25s, bottom .25s; pointer-events: none; white-space: nowrap; z-index: 200; max-width: calc(100vw - 40px); }
+.toast.show { opacity: 1; bottom: 95px; }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.tipo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tipo-item { background: var(--bg2); border-radius: var(--radius-sm); padding: 12px; }
+.tipo-name { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.tipo-qtd { font-family: var(--mono); font-size: 20px; color: var(--text); font-weight: 500; }
+.tipo-rec { font-size: 11px; color: var(--green); margin-top: 2px; }
+
+/* DESPESAS — categorias livres */
+.cat-add-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.cat-add-row input { flex: 1; padding: 13px 14px; font-size: 15px; font-family: var(--font); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; }
+.cat-add-row input:focus { border-color: var(--red); }
+.cat-add-row button { padding: 0 18px; background: var(--surface2); border: 1px solid var(--red); color: var(--red); border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); white-space: nowrap; }
+.cat-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.cat-chip { display: flex; align-items: center; gap: 6px; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 8px 8px 8px 14px; font-size: 13px; color: var(--text); }
+.cat-chip button { background: none; border: none; color: var(--text3); font-size: 13px; cursor: pointer; padding: 2px 6px; line-height: 1; }
+.cat-chip button:hover { color: var(--red); }
+.cat-empty { font-size: 12px; color: var(--text3); padding: 6px 0; }
+
+/* DESPESAS — toggle fixa/variável */
+.toggle-row { display: flex; gap: 8px; }
+.toggle-btn { flex: 1; padding: 13px; text-align: center; background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text2); font-size: 14px; font-weight: 600; cursor: pointer; font-family: var(--font); transition: all .15s; }
+.toggle-btn.sel { border-color: var(--red); color: var(--red); background: var(--surface2); }
+.toggle-hint { font-size: 11px; color: var(--text3); margin-top: 8px; line-height: 1.4; }
+
+/* DESPESAS — select de categoria */
+.field select { width: 100%; padding: 13px 14px; font-size: 15px; font-family: var(--font); background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); outline: none; appearance: none; }
+.field select:focus { border-color: var(--red); }
+
+/* DESPESAS — variações de cor vermelha reaproveitando classes existentes */
+.total-preview.exp { border-color: var(--red); }
+.total-preview.exp .value { color: var(--red); }
+.btn-primary.exp { background: var(--red); color: #2A0707; }
+.today-row .qty.exp { color: var(--red); }
+.bar-fill.exp { background: linear-gradient(90deg, #7A2424, var(--red)); }
+.wbar.exp { background: linear-gradient(180deg, var(--red), #B82E2E); }
+.mfill.exp { background: linear-gradient(90deg, #7A2424, var(--red)); }
+.fixa-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; background: rgba(245,166,35,0.15); color: var(--amber); padding: 2px 6px; border-radius: 6px; margin-left: 6px; }
+
+/* HERO LUCRO */
+.hero-metric.profit-pos { border-color: var(--green-dim); background: linear-gradient(135deg, var(--bg3) 0%, #0D2218 100%); }
+.hero-metric.profit-neg { border-color: #7A2424; background: linear-gradient(135deg, #1A0E0E 0%, #2A0707 100%); }
+.hero-metric.profit-neg::before { background: rgba(255,82,82,0.15); }
+.hero-value.profit-pos { color: var(--green); }
+.hero-value.profit-neg { color: var(--red); }
+.profit-breakdown { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; color: var(--text2); }
+.profit-breakdown span.v { font-family: var(--mono); font-weight: 600; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* BACKUP */
+.backup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.backup-card .card-title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+.backup-hint { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 16px; background: var(--bg2); border-radius: var(--radius-sm); padding: 12px 14px; border-left: 3px solid var(--green-dim); }
+.backup-hint strong { color: var(--text); }
+.backup-row { display: flex; flex-direction: column; gap: 10px; }
+.btn-backup { width: 100%; padding: 15px; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .15s, transform .1s; }
+.btn-backup:active { opacity: 0.85; transform: scale(0.99); }
+.btn-backup.save { background: var(--green); color: #021A0E; }
+.btn-backup.restore { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-backup.restore:hover { border-color: var(--green-dim); }
+#file-restore { display: none; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">💧</div>
+      <div class="logo-text"><h1>Lava Jato</h1><p>Controle financeiro</p></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="date-badge" id="date-badge"></div>
+      <button class="btn-ghost" onclick="showTab('backup',null)" title="Backup" style="font-size:18px;padding:6px 10px;border-radius:10px">💾</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- REGISTRAR -->
+    <div class="tab-pane active" id="tab-registrar">
+      <div class="card">
+        <div class="card-title">Adicionar lavagem</div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="inp-date" onchange="renderResumoDia()">
+        </div>
+        <div class="vehicle-grid">
+          <div class="v-card">
+            <div class="v-type"><span class="v-emoji">🚗</span> Carro</div>
+            <div class="v-price">R$ 35,00 / un.</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-carro-qtd" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <div class="v-card">
+            <div class="v-type"><span class="v-emoji">🏍️</span> Moto</div>
+            <div class="v-price">R$ 25,00 / un.</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-moto-qtd" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <div class="v-card">
+            <div class="v-type"><span class="v-emoji">🚙</span> SUV</div>
+            <div class="v-price">R$ 40,00 / un.</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-suv-qtd" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <div class="v-card">
+            <div class="v-type"><span class="v-emoji">🛻</span> Caminhonete</div>
+            <div class="v-price">R$ 50,00 / un.</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-cami-qtd" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <div class="v-card">
+            <div class="v-type"><span class="v-emoji">🚐</span> Van</div>
+            <div class="v-price">R$ 80,00 / un.</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-van-qtd" min="0" value="0" inputmode="numeric"></div>
+          </div>
+          <div class="v-card variados">
+            <div class="v-type"><span class="v-emoji">⭐</span> Variados</div>
+            <div class="v-price">Você define o valor</div>
+            <div class="v-input-row"><label>Quantidade</label><input type="number" id="v-outro-qtd" min="0" value="0" inputmode="numeric"></div>
+            <div class="v-input-row"><label>Valor unit. (R$)</label><input type="number" id="v-outro-preco" min="0" value="0" inputmode="decimal"></div>
+          </div>
+        </div>
+        <div class="total-preview">
+          <span class="label">A adicionar agora</span>
+          <span class="value" id="preview-total">R$ 0,00</span>
+        </div>
+        <div class="preview-hint">Os valores somam ao total já salvo nesse dia</div>
+        <button class="btn-primary" onclick="salvarDia()"><span>➕</span> Adicionar ao dia</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Resumo do dia</span>
+          <button class="btn-link" onclick="limparDia()">🗑️ apagar registros do dia</button>
+        </div>
+        <div id="resumo-dia"></div>
+      </div>
+    </div>
+
+    <!-- DESPESAS -->
+    <div class="tab-pane" id="tab-despesas">
+      <div class="card">
+        <div class="card-title">Categorias de despesa</div>
+        <div class="cat-add-row">
+          <input type="text" id="inp-nova-cat" placeholder="Ex: Água, Luz, Produtos..." maxlength="30">
+          <button onclick="adicionarCategoria()">+ Adicionar</button>
+        </div>
+        <div class="cat-list" id="cat-list"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Lançar despesa</div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="inp-date-desp" onchange="renderResumoDespesaDia()">
+        </div>
+        <div class="field">
+          <label>Categoria</label>
+          <select id="sel-categoria-desp"></select>
+        </div>
+        <div class="field">
+          <label>Valor (R$)</label>
+          <input type="number" id="inp-valor-desp" min="0" value="0" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label>Tipo de despesa</label>
+          <div class="toggle-row">
+            <button type="button" class="toggle-btn sel" id="btn-tipo-variavel" onclick="selecionarTipoDespesa('variavel')">🔁 Variável</button>
+            <button type="button" class="toggle-btn" id="btn-tipo-fixa" onclick="selecionarTipoDespesa('fixa')">📌 Fixa</button>
+          </div>
+          <div class="toggle-hint" id="tipo-hint">Lançamento único, só desta vez.</div>
+        </div>
+        <div class="total-preview exp">
+          <span class="label">A adicionar agora</span>
+          <span class="value" id="preview-desp">R$ 0,00</span>
+        </div>
+        <div class="preview-hint">Despesas variáveis somam ao dia. Despesas fixas repetem todo mês sozinhas.</div>
+        <button class="btn-primary exp" onclick="salvarDespesa()"><span>➖</span> Adicionar despesa</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Despesas fixas ativas</span>
+        </div>
+        <div id="lista-fixas"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Resumo do dia</span>
+          <button class="btn-link" onclick="limparDespesasDia()">🗑️ apagar do dia</button>
+        </div>
+        <div id="resumo-despesa-dia"></div>
+      </div>
+    </div>
+
+    <!-- SEMANA -->
+    <div class="tab-pane" id="tab-semana">
+      <div id="sem-hero"></div>
+      <div class="metric-grid" id="sem-metrics"></div>
+      <div class="card"><div class="card-title">Receita por dia</div><div class="wchart" id="sem-wchart"></div></div>
+      <div class="card"><div class="card-title">Despesa por dia</div><div class="wchart" id="sem-wchart-desp"></div></div>
+      <div class="card"><div class="card-title">Registros de receita</div><div class="records" id="sem-records"></div></div>
+    </div>
+
+    <!-- MÊS -->
+    <div class="tab-pane" id="tab-mes">
+      <div id="mes-hero"></div>
+      <div class="metric-grid" id="mes-metrics"></div>
+      <div class="card"><div class="card-title">Receita por semana</div><div class="chart" id="mes-chart"></div></div>
+      <div class="card"><div class="card-title">Veículos por tipo</div><div id="mes-breakdown"></div></div>
+      <div class="card"><div class="card-title">Despesas por categoria</div><div id="mes-breakdown-desp"></div></div>
+    </div>
+
+    <!-- BACKUP -->
+    <div class="tab-pane" id="tab-backup">
+      <div class="backup-card">
+        <div class="card-title">💾 Cópia de segurança</div>
+        <div class="backup-hint">
+          <strong>Por que fazer isso?</strong> Seus dados ficam guardados no celular. Se você trocar de celular, limpar o navegador ou reinstalar o app, vai perder tudo.<br><br>
+          Salve uma cópia e guarde no <strong>WhatsApp</strong> (mande pra você mesmo) ou no <strong>Google Drive</strong>. Assim nunca perde nada.
+        </div>
+        <div class="backup-row">
+          <button class="btn-backup save" onclick="salvarBackup()">📤 Salvar cópia de segurança</button>
+          <button class="btn-backup restore" onclick="document.getElementById('file-restore').click()">📥 Restaurar cópia</button>
+          <input type="file" id="file-restore" accept=".json" onchange="restaurarBackup(this)">
+        </div>
+      </div>
+      <div class="backup-card" style="border-color:rgba(255,82,82,0.3)">
+        <div class="card-title" style="color:var(--red)">⚠️ Atenção ao restaurar</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.6">
+          Ao restaurar, os dados atuais do app serão <strong style="color:var(--text)">substituídos</strong> pelos dados do arquivo escolhido.<br><br>
+          Se quiser misturar os dados (por exemplo, você e outro celular), entre em contato com quem fez o app.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-btn active" onclick="showTab('registrar',this)"><span class="nav-icon">✏️</span>Registrar</button>
+  <button class="nav-btn" onclick="showTab('despesas',this)"><span class="nav-icon">💸</span>Despesas</button>
+  <button class="nav-btn" onclick="showTab('semana',this)"><span class="nav-icon">📊</span>Semana</button>
+  <button class="nav-btn" onclick="showTab('mes',this)"><span class="nav-icon">📅</span>Mês</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DIAS = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const TIPOS = [
+  {k:'carro', l:'Carro',     e:'🚗', preco:35},
+  {k:'moto',  l:'Moto',      e:'🏍️', preco:25},
+  {k:'suv',   l:'SUV',       e:'🚙', preco:40},
+  {k:'cami',  l:'Camionete', e:'🛻', preco:50},
+  {k:'van',   l:'Van',       e:'🚐', preco:80},
+  {k:'outro', l:'Variados',  e:'⭐', preco:null} // preço livre por lançamento
+];
+
+const now = new Date();
+document.getElementById('date-badge').textContent = now.toLocaleDateString('pt-BR', {weekday:'short', day:'numeric', month:'short'});
+document.getElementById('inp-date').value = now.toISOString().slice(0,10);
+document.getElementById('inp-date-desp').value = now.toISOString().slice(0,10);
+
+// ── STORAGE (RECEITAS) ──
+async function loadData() {
+  try { return JSON.parse(localStorage.getItem('lava_jato_records')) || []; }
+  catch { return []; }
+}
+async function saveData(d) { localStorage.setItem('lava_jato_records', JSON.stringify(d)); }
+
+// ── STORAGE (DESPESAS) ──
+// Categorias: lista livre de nomes (string[])
+async function loadCategorias() {
+  try { return JSON.parse(localStorage.getItem('lava_jato_categorias_despesa')) || []; }
+  catch { return []; }
+}
+async function saveCategorias(c) { localStorage.setItem('lava_jato_categorias_despesa', JSON.stringify(c)); }
+
+// Despesas variáveis: mesmo padrão aditivo das receitas -> [{data, categorias:{nome:valor}, total}]
+async function loadDespesasVar() {
+  try { return JSON.parse(localStorage.getItem('lava_jato_despesas_variaveis')) || []; }
+  catch { return []; }
+}
+async function saveDespesasVar(d) { localStorage.setItem('lava_jato_despesas_variaveis', JSON.stringify(d)); }
+
+// Despesas fixas: templates que se repetem todo mês -> [{id, categoria, valor, diaDoMes, criadoEm}]
+async function loadDespesasFixas() {
+  try { return JSON.parse(localStorage.getItem('lava_jato_despesas_fixas')) || []; }
+  catch { return []; }
+}
+async function saveDespesasFixas(d) { localStorage.setItem('lava_jato_despesas_fixas', JSON.stringify(d)); }
+
+function fmt(n) { return 'R$ ' + Number(n).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtShort(n) {
+  if (n >= 1000) return 'R$ ' + (n/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + 'k';
+  return fmt(n);
+}
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = isErr ? 'var(--red)' : 'var(--green-dim)';
+  t.style.color = isErr ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── PREVIEW (do que está nos campos, ainda não salvo) ──
+function calcPreview() {
+  let total = 0;
+  TIPOS.forEach(t => {
+    const q = +document.getElementById('v-'+t.k+'-qtd').value || 0;
+    const p = t.preco ?? (+document.getElementById('v-outro-preco').value || 0);
+    total += q * p;
+  });
+  document.getElementById('preview-total').textContent = fmt(total);
+}
+TIPOS.forEach(t => document.getElementById('v-'+t.k+'-qtd').addEventListener('input', calcPreview));
+document.getElementById('v-outro-preco').addEventListener('input', calcPreview);
+
+// ── SALVAR (ADITIVO: soma ao que já existe naquele dia) ──
+async function salvarDia() {
+  const data = document.getElementById('inp-date').value;
+  if (!data) { toast('Selecione uma data', true); return; }
+
+  // monta o lançamento atual dos campos
+  const adicionar = {};
+  let totalNovo = 0;
+  let algo = false;
+  TIPOS.forEach(t => {
+    const q = +document.getElementById('v-'+t.k+'-qtd').value || 0;
+    const p = t.preco ?? (+document.getElementById('v-outro-preco').value || 0);
+    if (q > 0) algo = true;
+    adicionar[t.k] = {qtd: q, preco: p};
+    totalNovo += q * p;
+  });
+  if (!algo) { toast('Adicione ao menos 1 veículo', true); return; }
+
+  const records = await loadData();
+  let entry = records.find(r => r.data === data);
+  if (!entry) { entry = {data, veiculos: {}, total: 0}; records.push(entry); }
+
+  TIPOS.forEach(t => {
+    const atual = entry.veiculos[t.k] || {qtd:0, preco: t.preco ?? adicionar[t.k].preco};
+    const novaQtd = atual.qtd + adicionar[t.k].qtd;
+    // para "Variados", guarda preço médio ponderado já que pode variar entre lançamentos
+    let novoPreco = atual.preco;
+    if (t.k === 'outro' && adicionar[t.k].qtd > 0) {
+      const valorTotalAntigo = atual.qtd * atual.preco;
+      const valorTotalNovo = adicionar[t.k].qtd * adicionar[t.k].preco;
+      novoPreco = novaQtd > 0 ? (valorTotalAntigo + valorTotalNovo) / novaQtd : 0;
+    }
+    entry.veiculos[t.k] = {qtd: novaQtd, preco: novoPreco};
+  });
+  entry.total += totalNovo;
+
+  records.sort((a,b) => a.data.localeCompare(b.data));
+  await saveData(records);
+  renderSemana(); renderMes(); renderResumoDia();
+  toast('✓ Adicionado ao dia!');
+  TIPOS.forEach(t => document.getElementById('v-'+t.k+'-qtd').value = 0);
+  document.getElementById('v-outro-preco').value = 0;
+  calcPreview();
+}
+
+// ── RESUMO DO DIA (mostra o que já foi salvo na data selecionada) ──
+async function renderResumoDia() {
+  const data = document.getElementById('inp-date').value;
+  const records = await loadData();
+  const entry = records.find(r => r.data === data);
+  const box = document.getElementById('resumo-dia');
+  if (!entry || entry.total === 0) {
+    box.innerHTML = `<div class="today-empty">Nenhuma lavagem registrada ainda hoje 🚿</div>`;
+    return;
+  }
+  const linhas = TIPOS.filter(t => entry.veiculos[t.k]?.qtd > 0).map(t => {
+    const v = entry.veiculos[t.k];
+    return `<div class="today-row">
+      <span class="name">${t.e} ${t.l}</span>
+      <span class="qty">${v.qtd} un · ${fmt(v.qtd * v.preco)}</span>
+    </div>`;
+  }).join('');
+  box.innerHTML = `<div class="today-list">${linhas}</div>
+    <div class="total-preview" style="margin-top:10px;margin-bottom:0">
+      <span class="label">Total do dia</span><span class="value">${fmt(entry.total)}</span>
+    </div>`;
+}
+
+async function limparDia() {
+  const data = document.getElementById('inp-date').value;
+  const dataFmt = new Date(data+'T12:00').toLocaleDateString('pt-BR');
+  if (!confirm('⚠️ Isso vai APAGAR PERMANENTEMENTE todas as lavagens salvas em ' + dataFmt + '.\n\nNão pode ser desfeito. Continuar?')) return;
+  const records = await loadData();
+  await saveData(records.filter(r => r.data !== data));
+  renderResumoDia(); renderSemana(); renderMes();
+  toast('Registros do dia apagados');
+}
+
+// ════════════════════════════════════════════
+// DESPESAS
+// ════════════════════════════════════════════
+
+let tipoDespesaAtual = 'variavel'; // 'variavel' | 'fixa'
+
+// ── CATEGORIAS (livres, cadastradas pelo usuário) ──
+async function renderCategorias() {
+  const cats = await loadCategorias();
+  const listBox = document.getElementById('cat-list');
+  const sel = document.getElementById('sel-categoria-desp');
+
+  listBox.innerHTML = cats.length
+    ? cats.map(c => `<div class="cat-chip"><span>${c}</span><button onclick="removerCategoria('${c.replace(/'/g,"\\'")}')">✕</button></div>`).join('')
+    : `<div class="cat-empty">Nenhuma categoria ainda. Adicione a primeira acima 👆</div>`;
+
+  const selecionadoAntes = sel.value;
+  sel.innerHTML = cats.length
+    ? cats.map(c => `<option value="${c}">${c}</option>`).join('')
+    : `<option value="">Cadastre uma categoria primeiro</option>`;
+  if (cats.includes(selecionadoAntes)) sel.value = selecionadoAntes;
+}
+
+async function adicionarCategoria() {
+  const inp = document.getElementById('inp-nova-cat');
+  const nome = inp.value.trim();
+  if (!nome) { toast('Digite o nome da categoria', true); return; }
+  const cats = await loadCategorias();
+  if (cats.some(c => c.toLowerCase() === nome.toLowerCase())) { toast('Essa categoria já existe', true); return; }
+  cats.push(nome);
+  await saveCategorias(cats);
+  inp.value = '';
+  renderCategorias();
+  toast('✓ Categoria adicionada!');
+}
+
+async function removerCategoria(nome) {
+  if (!confirm('Remover a categoria "' + nome + '"?\n\nDespesas já lançadas com ela não serão apagadas.')) return;
+  const cats = await loadCategorias();
+  await saveCategorias(cats.filter(c => c !== nome));
+  renderCategorias();
+  toast('Categoria removida');
+}
+
+// ── TOGGLE FIXA / VARIÁVEL ──
+function selecionarTipoDespesa(tipo) {
+  tipoDespesaAtual = tipo;
+  document.getElementById('btn-tipo-variavel').classList.toggle('sel', tipo === 'variavel');
+  document.getElementById('btn-tipo-fixa').classList.toggle('sel', tipo === 'fixa');
+  document.getElementById('tipo-hint').textContent = tipo === 'fixa'
+    ? 'Repete todo mês automaticamente. Você só lança uma vez.'
+    : 'Lançamento único, só desta vez.';
+}
+
+function calcPreviewDespesa() {
+  const v = +document.getElementById('inp-valor-desp').value || 0;
+  document.getElementById('preview-desp').textContent = fmt(v);
+}
+document.getElementById('inp-valor-desp').addEventListener('input', calcPreviewDespesa);
+
+// ── SALVAR DESPESA ──
+async function salvarDespesa() {
+  const data = document.getElementById('inp-date-desp').value;
+  const categoria = document.getElementById('sel-categoria-desp').value;
+  const valor = +document.getElementById('inp-valor-desp').value || 0;
+
+  if (!categoria) { toast('Cadastre e escolha uma categoria', true); return; }
+  if (!data) { toast('Selecione uma data', true); return; }
+  if (valor <= 0) { toast('Informe um valor maior que zero', true); return; }
+
+  if (tipoDespesaAtual === 'fixa') {
+    const fixas = await loadDespesasFixas();
+    const diaDoMes = new Date(data+'T12:00').getDate();
+    fixas.push({ id: Date.now().toString(36), categoria, valor, diaDoMes, criadoEm: data });
+    await saveDespesasFixas(fixas);
+    toast('✓ Despesa fixa criada! Vai repetir todo mês.');
+  } else {
+    const list = await loadDespesasVar();
+    let entry = list.find(r => r.data === data);
+    if (!entry) { entry = {data, categorias: {}, total: 0}; list.push(entry); }
+    entry.categorias[categoria] = (entry.categorias[categoria] || 0) + valor; // soma, nunca substitui
+    entry.total += valor;
+    list.sort((a,b) => a.data.localeCompare(b.data));
+    await saveDespesasVar(list);
+    toast('✓ Despesa adicionada ao dia!');
+  }
+
+  document.getElementById('inp-valor-desp').value = 0;
+  calcPreviewDespesa();
+  renderResumoDespesaDia();
+  renderListaFixas();
+  renderSemana(); renderMes();
+}
+
+// ── PROJEÇÃO: junta despesas fixas (repetidas todo mês) + variáveis (pontuais) num intervalo ──
+// Retorna array de {data, categoria, valor, tipo}
+async function getDespesasNoIntervalo(dataIni, dataFim) {
+  const fixas = await loadDespesasFixas();
+  const variaveis = await loadDespesasVar();
+  const itens = [];
+
+  // variáveis: já são pontuais, basta filtrar pela data e "explodir" por categoria
+  variaveis.forEach(r => {
+    if (r.data < dataIni || r.data > dataFim) return;
+    Object.entries(r.categorias).forEach(([categoria, valor]) => {
+      if (valor > 0) itens.push({ data: r.data, categoria, valor, tipo: 'variavel' });
+    });
+  });
+
+  // fixas: projeta uma ocorrência por mês, em todo mês entre a criação e dataFim,
+  // ajustando o dia caso o mês não tenha aquele dia (ex: dia 31 em fevereiro)
+  fixas.forEach(f => {
+    const inicio = new Date(f.criadoEm + 'T12:00');
+    let cursor = new Date(inicio.getFullYear(), inicio.getMonth(), 1, 12);
+    const limite = new Date(dataFim + 'T12:00');
+    while (cursor <= limite) {
+      const ultimoDiaDoMes = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+      const dia = Math.min(f.diaDoMes, ultimoDiaDoMes);
+      const ocorrencia = new Date(cursor.getFullYear(), cursor.getMonth(), dia, 12);
+      const ocorrenciaStr = ocorrencia.toISOString().slice(0,10);
+      if (ocorrenciaStr >= f.criadoEm && ocorrenciaStr >= dataIni && ocorrenciaStr <= dataFim) {
+        itens.push({ data: ocorrenciaStr, categoria: f.categoria, valor: f.valor, tipo: 'fixa' });
+      }
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1, 12);
+    }
+  });
+
+  return itens.sort((a,b) => a.data.localeCompare(b.data));
+}
+
+async function getTotalDespesasNoIntervalo(dataIni, dataFim) {
+  const itens = await getDespesasNoIntervalo(dataIni, dataFim);
+  return itens.reduce((a,i) => a + i.valor, 0);
+}
+
+// ── RESUMO DO DIA (despesas) ──
+async function renderResumoDespesaDia() {
+  const data = document.getElementById('inp-date-desp').value;
+  const itens = await getDespesasNoIntervalo(data, data);
+  const box = document.getElementById('resumo-despesa-dia');
+  if (!itens.length) {
+    box.innerHTML = `<div class="today-empty">Nenhuma despesa registrada neste dia 💸</div>`;
+    return;
+  }
+  const total = itens.reduce((a,i) => a + i.valor, 0);
+  const linhas = itens.map(i => `
+    <div class="today-row">
+      <span class="name">${i.categoria}${i.tipo === 'fixa' ? '<span class="fixa-tag">fixa</span>' : ''}</span>
+      <span class="qty exp">${fmt(i.valor)}</span>
+    </div>`).join('');
+  box.innerHTML = `<div class="today-list">${linhas}</div>
+    <div class="total-preview exp" style="margin-top:10px;margin-bottom:0">
+      <span class="label">Total do dia</span><span class="value">${fmt(total)}</span>
+    </div>`;
+}
+
+async function limparDespesasDia() {
+  const data = document.getElementById('inp-date-desp').value;
+  const dataFmt = new Date(data+'T12:00').toLocaleDateString('pt-BR');
+  if (!confirm('⚠️ Isso vai apagar as despesas VARIÁVEIS lançadas em ' + dataFmt + '.\n\nDespesas fixas não são apagadas aqui — use "remover" na lista de fixas.\n\nContinuar?')) return;
+  const list = await loadDespesasVar();
+  await saveDespesasVar(list.filter(r => r.data !== data));
+  renderResumoDespesaDia(); renderSemana(); renderMes();
+  toast('Despesas variáveis do dia apagadas');
+}
+
+// ── LISTA DE DESPESAS FIXAS (para o usuário ver e poder remover) ──
+async function renderListaFixas() {
+  const fixas = await loadDespesasFixas();
+  const box = document.getElementById('lista-fixas');
+  if (!fixas.length) {
+    box.innerHTML = `<div class="today-empty">Nenhuma despesa fixa cadastrada</div>`;
+    return;
+  }
+  box.innerHTML = `<div class="today-list">` + fixas.map(f => `
+    <div class="today-row">
+      <span class="name">📌 ${f.categoria} <span style="color:var(--text3);font-size:11px">(todo dia ${f.diaDoMes})</span></span>
+      <span class="qty exp">${fmt(f.valor)} <button class="btn-link" style="margin-left:8px" onclick="removerFixa('${f.id}')">remover</button></span>
+    </div>`).join('') + `</div>`;
+}
+
+async function removerFixa(id) {
+  if (!confirm('Remover esta despesa fixa? Ela vai parar de repetir nos próximos meses.')) return;
+  const fixas = await loadDespesasFixas();
+  await saveDespesasFixas(fixas.filter(f => f.id !== id));
+  renderListaFixas();
+  renderSemana(); renderMes(); renderResumoDespesaDia();
+  toast('Despesa fixa removida');
+}
+
+// ── RANGES ──
+function getWeekRange() {
+  const now = new Date();
+  const mon = new Date(now); mon.setDate(now.getDate() - now.getDay() + 1);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  return [mon.toISOString().slice(0,10), sun.toISOString().slice(0,10)];
+}
+function getMonthRange() {
+  const now = new Date();
+  const f = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+  const l = new Date(now.getFullYear(), now.getMonth()+1, 0).toISOString().slice(0,10);
+  return [f, l];
+}
+
+function renderChart(items, labelKey, valueKey, dim) {
+  if (!items.length) return `<div class="empty"><div class="empty-icon">📉</div>Nenhum registro</div>`;
+  const maxVal = Math.max(...items.map(i => i[valueKey]), 1);
+  return items.map(i => {
+    const pct = Math.round((i[valueKey] / maxVal) * 100);
+    return `<div class="bar-row">
+      <span class="bar-label">${i[labelKey]}</span>
+      <div class="bar-track"><div class="bar-fill${dim?' dim':''}" style="width:${pct}%"></div></div>
+      <span class="bar-val">${fmtShort(i[valueKey])}</span>
+    </div>`;
+  }).join('');
+}
+
+async function renderSemana() {
+  const [s, e] = getWeekRange();
+  const records = await loadData();
+  const week = records.filter(r => r.data >= s && r.data <= e);
+  const totalRec = week.reduce((a, r) => a + r.total, 0);
+  const totalVeic = week.reduce((a, r) => a + TIPOS.reduce((b, t) => b + (r.veiculos[t.k]?.qtd||0), 0), 0);
+  const melhor = week.length ? week.reduce((a, b) => a.total > b.total ? a : b) : null;
+
+  document.getElementById('sem-hero').innerHTML = `
+    <div class="hero-metric">
+      <div class="hero-label">💰 Receita da semana</div>
+      <div class="hero-value">${fmt(totalRec)}</div>
+      <div class="hero-sub">${week.length} dia${week.length!==1?'s':''} registrado${week.length!==1?'s':''}</div>
+    </div>`;
+  document.getElementById('sem-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Veículos lavados</div><div class="metric-value">${totalVeic}</div></div>
+    <div class="metric"><div class="metric-label">Melhor dia</div><div class="metric-value amber">${melhor ? fmtShort(melhor.total) : '—'}</div></div>`;
+
+  // gráfico vertical: monta os 7 dias da semana (seg→dom), com ou sem registro
+  const monday = new Date(s + 'T12:00');
+  const todayStr = new Date().toISOString().slice(0,10);
+  const dias7 = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday); d.setDate(monday.getDate() + i);
+    const key = d.toISOString().slice(0,10);
+    const rec = week.find(r => r.data === key);
+    dias7.push({date: d, key, value: rec ? rec.total : 0, isToday: key === todayStr});
+  }
+  const maxVal = Math.max(...dias7.map(d => d.value), 1);
+  document.getElementById('sem-wchart').innerHTML = dias7.map(d => {
+    const h = d.value > 0 ? Math.max((d.value / maxVal) * 100, 6) : 4;
+    return `<div class="wcol${d.isToday ? ' td' : ''}">
+      <div class="wbar-wrap"><div class="wbar${d.value === 0 ? ' empty' : ''}" style="height:${h}%"></div></div>
+      <div class="wval">${d.value > 0 ? fmtShort(d.value) : '—'}</div>
+      <div class="wday">${DIAS[d.date.getDay()]}</div>
+    </div>`;
+  }).join('');
+
+  // gráfico vertical de despesas (fixas projetadas + variáveis), mesmo padrão visual em vermelho
+  const despItens = await getDespesasNoIntervalo(s, e);
+  const dias7desp = dias7.map(d => ({
+    ...d,
+    value: despItens.filter(i => i.data === d.key).reduce((a,i) => a + i.valor, 0)
+  }));
+  const maxValDesp = Math.max(...dias7desp.map(d => d.value), 1);
+  document.getElementById('sem-wchart-desp').innerHTML = dias7desp.map(d => {
+    const h = d.value > 0 ? Math.max((d.value / maxValDesp) * 100, 6) : 4;
+    return `<div class="wcol${d.isToday ? ' td' : ''}">
+      <div class="wbar-wrap"><div class="wbar exp${d.value === 0 ? ' empty' : ''}" style="height:${h}%"></div></div>
+      <div class="wval">${d.value > 0 ? fmtShort(d.value) : '—'}</div>
+      <div class="wday">${DIAS[d.date.getDay()]}</div>
+    </div>`;
+  }).join('');
+
+  if (!week.length) { document.getElementById('sem-records').innerHTML = `<div class="empty"><div class="empty-icon">📋</div>Nenhum registro esta semana</div>`; return; }
+  document.getElementById('sem-records').innerHTML = [...week].reverse().map(r => {
+    const d = new Date(r.data + 'T12:00');
+    const detail = TIPOS.filter(t => r.veiculos[t.k]?.qtd > 0).map(t => `${r.veiculos[t.k].qtd} ${t.e}`).join('  ');
+    return `<div class="record-item">
+      <div class="record-date"><div class="day">${d.getDate()}</div><div class="wday">${DIAS[d.getDay()]}</div></div>
+      <div class="record-info"><div class="record-total">${fmt(r.total)}</div><div class="record-detail">${detail || 'Sem veículos'}</div></div>
+      <div class="record-del"><button class="btn-ghost" onclick="deletar('${r.data}')">✕</button></div>
+    </div>`;
+  }).join('');
+}
+
+async function renderMes() {
+  const [s, e] = getMonthRange();
+  const records = await loadData();
+  const mes = records.filter(r => r.data >= s && r.data <= e);
+  const totalRec = mes.reduce((a, r) => a + r.total, 0);
+  const totalVeic = mes.reduce((a, r) => a + TIPOS.reduce((b, t) => b + (r.veiculos[t.k]?.qtd||0), 0), 0);
+  const ticketMedio = mes.length ? totalRec / mes.length : 0;
+
+  const despItens = await getDespesasNoIntervalo(s, e);
+  const totalDesp = despItens.reduce((a,i) => a + i.valor, 0);
+  const lucro = totalRec - totalDesp;
+  const positivo = lucro >= 0;
+
+  const mesNome = new Date().toLocaleDateString('pt-BR', {month:'long', year:'numeric'});
+  document.getElementById('mes-hero').innerHTML = `
+    <div class="hero-metric ${positivo ? 'profit-pos' : 'profit-neg'}">
+      <div class="hero-label">${positivo ? '✅' : '⚠️'} Lucro de ${mesNome.charAt(0).toUpperCase()+mesNome.slice(1)}</div>
+      <div class="hero-value ${positivo ? 'profit-pos' : 'profit-neg'}">${positivo ? '' : '-'}${fmt(Math.abs(lucro))}</div>
+      <div class="hero-sub">Receita − Despesa = Lucro</div>
+      <div class="profit-breakdown">
+        <span>Receita: <span class="v" style="color:var(--green)">${fmtShort(totalRec)}</span></span>
+        <span>Despesa: <span class="v" style="color:var(--red)">${fmtShort(totalDesp)}</span></span>
+      </div>
+    </div>`;
+  document.getElementById('mes-metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Veículos no mês</div><div class="metric-value">${totalVeic}</div></div>
+    <div class="metric"><div class="metric-label">Ticket médio/dia</div><div class="metric-value amber">${fmtShort(ticketMedio)}</div></div>`;
+
+  const semanas = [[],[],[],[],[]];
+  mes.forEach(r => { const d = new Date(r.data+'T12:00'); const w = Math.floor((d.getDate()-1)/7); semanas[w].push(r); });
+  const semTotais = semanas.map((s,i) => ({label:'Sem '+(i+1), value: s.reduce((a,r)=>a+r.total,0)})).filter(s=>s.value>0);
+  document.getElementById('mes-chart').innerHTML = renderChart(semTotais, 'label', 'value', true);
+
+  const tipoData = TIPOS.map(t => ({
+    t,
+    qtd: mes.reduce((a,r)=>a+(r.veiculos[t.k]?.qtd||0),0),
+    rec: mes.reduce((a,r)=>a+(r.veiculos[t.k]?.qtd||0)*(r.veiculos[t.k]?.preco||0),0)
+  }));
+  const maxQtd = Math.max(...tipoData.map(d => d.qtd), 1);
+  document.getElementById('mes-breakdown').innerHTML = tipoData.map(({t,qtd,rec}) => `
+    <div class="mrow">
+      <span class="m-emoji">${t.e}</span>
+      <div class="minfo">
+        <div class="mlabel-row"><span class="mn">${t.l}</span><span class="mc">${qtd} · ${fmtShort(rec)}</span></div>
+        <div class="mtrack"><div class="mfill" style="width:${(qtd/maxQtd)*100}%"></div></div>
+      </div>
+    </div>`).join('');
+
+  // breakdown de despesas por categoria no mês (reaproveita .mrow / .mtrack)
+  const porCategoria = {};
+  despItens.forEach(i => { porCategoria[i.categoria] = (porCategoria[i.categoria] || 0) + i.valor; });
+  const catEntries = Object.entries(porCategoria).sort((a,b) => b[1]-a[1]);
+  const maxCat = Math.max(...catEntries.map(c => c[1]), 1);
+  document.getElementById('mes-breakdown-desp').innerHTML = catEntries.length
+    ? catEntries.map(([nome, valor]) => `
+      <div class="mrow">
+        <span class="m-emoji">💸</span>
+        <div class="minfo">
+          <div class="mlabel-row"><span class="mn">${nome}</span><span class="mc">${fmtShort(valor)}</span></div>
+          <div class="mtrack"><div class="mfill exp" style="width:${(valor/maxCat)*100}%"></div></div>
+        </div>
+      </div>`).join('')
+    : `<div class="empty"><div class="empty-icon">💸</div>Nenhuma despesa este mês</div>`;
+}
+
+async function deletar(data) {
+  if (!confirm('Remover registro de ' + new Date(data+'T12:00').toLocaleDateString('pt-BR') + '?')) return;
+  const records = await loadData();
+  await saveData(records.filter(r => r.data !== data));
+  renderSemana(); renderResumoDia();
+  toast('Registro removido');
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (name === 'semana') renderSemana();
+  if (name === 'mes') renderMes();
+  if (name === 'registrar') renderResumoDia();
+  if (name === 'despesas') { renderCategorias(); renderResumoDespesaDia(); renderListaFixas(); }
+}
+
+// ── BACKUP ──
+function salvarBackup() {
+  const chaves = [
+    'lava_jato_records',
+    'lava_jato_categorias_despesa',
+    'lava_jato_despesas_variaveis',
+    'lava_jato_despesas_fixas'
+  ];
+  const dados = {};
+  chaves.forEach(k => {
+    try { dados[k] = JSON.parse(localStorage.getItem(k)) || null; }
+    catch { dados[k] = null; }
+  });
+  const json = JSON.stringify({ versao: 1, geradoEm: new Date().toISOString(), dados }, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `lavajato-backup-${hoje}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Cópia salva! Guarde no WhatsApp ou Google Drive.');
+}
+
+function restaurarBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const obj = JSON.parse(e.target.result);
+      if (!obj.dados) throw new Error('Arquivo inválido');
+      if (!confirm('Isso vai substituir todos os dados atuais pelo backup. Continuar?')) {
+        input.value = '';
+        return;
+      }
+      Object.entries(obj.dados).forEach(([k, v]) => {
+        if (v !== null) localStorage.setItem(k, JSON.stringify(v));
+        else localStorage.removeItem(k);
+      });
+      input.value = '';
+      toast('✅ Dados restaurados com sucesso!');
+      renderResumoDia();
+    } catch {
+      toast('❌ Arquivo inválido ou corrompido', true);
+      input.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+renderResumoDia();
+</script>
+</body>
+</html>
